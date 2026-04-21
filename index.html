@@ -3,14 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interactive Light Switch</title>
+    <title>Interactive Sakura Light Switch</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         :root {
-            --bg-light: #f3f4f6;
+            --bg-light: #fff5f7; /* Soft pink-white for sakura theme */
             --bg-dark: #0b0f19;
-            --wall-light: #e5e7eb;
+            --wall-light: #fce7f3;
             --wall-dark: #1f2937;
+            --sakura-pink: #fbcfe8;
         }
 
         body {
@@ -30,7 +31,7 @@
         /* Light/Dark Themes */
         body.light-on {
             background-color: var(--bg-light);
-            color: #1f2937;
+            color: #be185d;
         }
 
         body.light-off {
@@ -105,8 +106,8 @@
         }
 
         .light-on .bulb {
-            background: #fde047;
-            box-shadow: 0 0 100px 30px rgba(253, 224, 71, 0.5);
+            background: #fdf2f8;
+            box-shadow: 0 0 100px 30px rgba(244, 114, 182, 0.4);
         }
 
         .bulb::after {
@@ -121,29 +122,42 @@
             border-radius: 0 0 4px 4px;
         }
 
-        /* Heart Drop Animation */
-        .heart-particle {
+        /* Sakura Particle Animation */
+        .sakura-particle {
             position: fixed;
             top: -50px;
             font-size: 24px;
             pointer-events: none;
             z-index: 5;
             user-select: none;
-            filter: drop-shadow(0 0 5px rgba(239, 68, 68, 0.3));
+            filter: drop-shadow(0 0 5px rgba(244, 114, 182, 0.3));
         }
 
         @keyframes fall {
             0% {
-                transform: translateY(0) rotate(0deg);
-                opacity: 1;
-            }
-            70% {
+                transform: translateY(0) rotate(0deg) translateX(0);
                 opacity: 1;
             }
             100% {
-                transform: translateY(110vh) rotate(360deg);
+                transform: translateY(110vh) rotate(720deg) translateX(50px);
                 opacity: 0;
             }
+        }
+
+        /* Shatter Particle Animation (Sakura Petals) */
+        .shatter-piece {
+            position: fixed;
+            width: 8px;
+            height: 4px;
+            background: #f472b6;
+            border-radius: 50% 0 50% 0; /* Petal shape */
+            pointer-events: none;
+            z-index: 6;
+        }
+
+        @keyframes explode {
+            0% { transform: translate(0, 0) scale(1) rotate(0deg); opacity: 1; }
+            100% { transform: translate(var(--tx), var(--ty)) scale(0) rotate(180deg); opacity: 0; }
         }
 
         /* Footer Attribution */
@@ -201,44 +215,69 @@
         const statusLabel = document.getElementById('statusLabel');
         
         let isOn = false;
-        let heartInterval;
+        let sakuraInterval;
 
-        function createHeart() {
-            const heart = document.createElement('div');
-            heart.classList.add('heart-particle');
-            heart.innerText = '❤️';
+        function createSakura() {
+            const sakura = document.createElement('div');
+            sakura.classList.add('sakura-particle', 'active-sakura');
+            // Using various sakura/flower emojis for variety
+            const flowers = ['🌸', '💮', '🌸', '🏵️'];
+            sakura.innerText = flowers[Math.floor(Math.random() * flowers.length)];
             
-            // Random horizontal position
-            heart.style.left = Math.random() * 100 + 'vw';
+            sakura.style.left = Math.random() * 100 + 'vw';
+            const duration = Math.random() * 3 + 4; // Sakura falls slower than hearts
+            sakura.style.animation = `fall ${duration}s linear forwards`;
             
-            // Random duration between 2 and 4 seconds
-            const duration = Math.random() * 2 + 2;
-            heart.style.animation = `fall ${duration}s linear forwards`;
-            
-            // Random scale
             const scale = Math.random() * 0.8 + 0.5;
-            heart.style.fontSize = (24 * scale) + 'px';
+            sakura.style.fontSize = (24 * scale) + 'px';
 
-            document.body.appendChild(heart);
+            document.body.appendChild(sakura);
 
-            // Clean up heart after animation ends
             setTimeout(() => {
-                heart.remove();
+                if (sakura.parentElement) sakura.remove();
             }, duration * 1000);
         }
 
-        function startHearts() {
-            // Stop any existing interval just in case
-            stopHearts();
-            // Drop hearts every 150ms
-            heartInterval = setInterval(createHeart, 150);
+        function shatterSakura() {
+            const flowers = document.querySelectorAll('.active-sakura');
+            flowers.forEach(flower => {
+                const rect = flower.getBoundingClientRect();
+                const x = rect.left + rect.width / 2;
+                const y = rect.top + rect.height / 2;
+
+                // Create small pink petals for the "break" effect
+                for (let i = 0; i < 8; i++) {
+                    const piece = document.createElement('div');
+                    piece.classList.add('shatter-piece');
+                    
+                    const tx = (Math.random() - 0.5) * 150;
+                    const ty = (Math.random() - 0.5) * 150;
+                    
+                    piece.style.setProperty('--tx', `${tx}px`);
+                    piece.style.setProperty('--ty', `${ty}px`);
+                    piece.style.left = `${x}px`;
+                    piece.style.top = `${y}px`;
+                    piece.style.animation = 'explode 0.8s ease-out forwards';
+                    
+                    document.body.appendChild(piece);
+                    setTimeout(() => piece.remove(), 800);
+                }
+                
+                flower.remove();
+            });
         }
 
-        function stopHearts() {
-            if (heartInterval) {
-                clearInterval(heartInterval);
-                heartInterval = null;
+        function startSakura() {
+            stopSakura();
+            sakuraInterval = setInterval(createSakura, 250);
+        }
+
+        function stopSakura() {
+            if (sakuraInterval) {
+                clearInterval(sakuraInterval);
+                sakuraInterval = null;
             }
+            shatterSakura();
         }
 
         function toggleLight() {
@@ -247,13 +286,13 @@
             if (isOn) {
                 body.classList.remove('light-off');
                 body.classList.add('light-on');
-                statusLabel.innerText = "The Light is On";
-                startHearts();
+                statusLabel.innerText = "The Sakura Blooms";
+                startSakura();
             } else {
                 body.classList.remove('light-on');
                 body.classList.add('light-off');
                 statusLabel.innerText = "The Room is Dark";
-                stopHearts();
+                stopSakura();
             }
 
             if (navigator.vibrate) {
