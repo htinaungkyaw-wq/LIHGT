@@ -76,7 +76,7 @@
             transform: rotateX(-25deg);
         }
 
-        /* Bulb Styling - Responsive positioning */
+        /* Bulb Styling */
         .bulb-wrapper {
             position: absolute;
             top: 0;
@@ -121,6 +121,31 @@
             border-radius: 0 0 4px 4px;
         }
 
+        /* Heart Drop Animation */
+        .heart-particle {
+            position: fixed;
+            top: -50px;
+            font-size: 24px;
+            pointer-events: none;
+            z-index: 5;
+            user-select: none;
+            filter: drop-shadow(0 0 5px rgba(239, 68, 68, 0.3));
+        }
+
+        @keyframes fall {
+            0% {
+                transform: translateY(0) rotate(0deg);
+                opacity: 1;
+            }
+            70% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(110vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
         /* Footer Attribution */
         .attribution {
             position: fixed;
@@ -129,13 +154,13 @@
             font-size: 0.9rem;
             opacity: 0.5;
             transition: opacity 0.3s;
+            z-index: 30;
         }
         
         .attribution:hover {
             opacity: 1;
         }
 
-        /* Status text adjustments */
         .status-text {
             font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             font-weight: 700;
@@ -143,10 +168,10 @@
             letter-spacing: 0.1em;
             text-align: center;
             margin-top: 1rem;
+            pointer-events: none;
         }
 
-        /* Prevent layout breaking on very small screens */
-        @media (max-height: 400px) {
+        @media (max-height: 500px) {
             .cord { height: 50px; }
             .attribution { position: static; margin-top: 20px; }
         }
@@ -163,7 +188,7 @@
         <div class="switch-container" id="lightSwitch" role="button" aria-label="Toggle light">
             <div class="switch-toggle"></div>
         </div>
-        <p class="status-text text-lg sm:text-xl md:text-2xl" id="statusLabel">The Room is Dark</p>
+        <div id="statusLabel" class="status-text text-lg sm:text-xl md:text-2xl">The Room is Dark</div>
     </main>
 
     <footer class="attribution">
@@ -175,8 +200,46 @@
         const lightSwitch = document.getElementById('lightSwitch');
         const statusLabel = document.getElementById('statusLabel');
         
-        // Initial state is now false (Off) so it is dark when opened
         let isOn = false;
+        let heartInterval;
+
+        function createHeart() {
+            const heart = document.createElement('div');
+            heart.classList.add('heart-particle');
+            heart.innerText = '❤️';
+            
+            // Random horizontal position
+            heart.style.left = Math.random() * 100 + 'vw';
+            
+            // Random duration between 2 and 4 seconds
+            const duration = Math.random() * 2 + 2;
+            heart.style.animation = `fall ${duration}s linear forwards`;
+            
+            // Random scale
+            const scale = Math.random() * 0.8 + 0.5;
+            heart.style.fontSize = (24 * scale) + 'px';
+
+            document.body.appendChild(heart);
+
+            // Clean up heart after animation ends
+            setTimeout(() => {
+                heart.remove();
+            }, duration * 1000);
+        }
+
+        function startHearts() {
+            // Stop any existing interval just in case
+            stopHearts();
+            // Drop hearts every 150ms
+            heartInterval = setInterval(createHeart, 150);
+        }
+
+        function stopHearts() {
+            if (heartInterval) {
+                clearInterval(heartInterval);
+                heartInterval = null;
+            }
+        }
 
         function toggleLight() {
             isOn = !isOn;
@@ -185,13 +248,14 @@
                 body.classList.remove('light-off');
                 body.classList.add('light-on');
                 statusLabel.innerText = "The Light is On";
+                startHearts();
             } else {
                 body.classList.remove('light-on');
                 body.classList.add('light-off');
                 statusLabel.innerText = "The Room is Dark";
+                stopHearts();
             }
 
-            // Tactile feedback
             if (navigator.vibrate) {
                 navigator.vibrate(15);
             }
@@ -199,7 +263,6 @@
 
         lightSwitch.addEventListener('click', toggleLight);
 
-        // Keyboard accessibility
         window.addEventListener('keydown', (e) => {
             if (e.code === 'Space' || e.code === 'Enter') {
                 e.preventDefault();
