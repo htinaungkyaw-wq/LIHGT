@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Light Switch</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>a
+        :root {
+            --bg-light: #f3f4f6;
+            --bg-dark: #0b0f19;
+            --wall-light: #e5e7eb;
+            --wall-dark: #1f2937;
+        }
+
+        body {
+            transition: background-color 0.5s ease, color 0.5s ease;
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        /* Light/Dark Themes */
+        body.light-on {
+            background-color: var(--bg-light);
+            color: #1f2937;
+        }
+
+        body.light-off {
+            background-color: var(--bg-dark);
+            color: #f3f4f6;
+        }
+
+        /* The Switch Mechanism */
+        .switch-container {
+            position: relative;
+            width: 70px;
+            height: 110px;
+            background: #d1d5db;
+            border-radius: 12px;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1), 0 4px 6px rgba(0,0,0,0.2);
+            padding: 8px;
+            cursor: pointer;
+            transition: background 0.3s;
+            touch-action: manipulation;
+        }
+
+        .light-off .switch-container {
+            background: #374151;
+        }
+
+        .switch-toggle {
+            width: 100%;
+            height: 100%;
+            background: #ffffff;
+            border-radius: 6px;
+            position: relative;
+            transition: transform 0.2s cubic-bezier(0.45, 0.05, 0.55, 0.95), background 0.3s;
+            box-shadow: 0 5px 0 #9ca3af;
+        }
+
+        .light-off .switch-toggle {
+            background: #4b5563;
+            transform: rotateX(25deg);
+            box-shadow: 0 -5px 0 #111827;
+        }
+
+        .light-on .switch-toggle {
+            transform: rotateX(-25deg);
+        }
+
+        /* Bulb Styling - Responsive positioning */
+        .bulb-wrapper {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 10;
+        }
+
+        .cord {
+            width: 2px;
+            height: 15vh;
+            background: #4b5563;
+        }
+
+        .bulb {
+            width: 50px;
+            height: 50px;
+            background: #9ca3af;
+            border-radius: 50%;
+            position: relative;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 0 rgba(253, 224, 71, 0);
+        }
+
+        .light-on .bulb {
+            background: #fde047;
+            box-shadow: 0 0 100px 30px rgba(253, 224, 71, 0.5);
+        }
+
+        .bulb::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 18px;
+            height: 12px;
+            background: #4b5563;
+            border-radius: 0 0 4px 4px;
+        }
+
+        /* Footer Attribution */
+        .attribution {
+            position: fixed;
+            bottom: 20px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.9rem;
+            opacity: 0.5;
+            transition: opacity 0.3s;
+        }
+        
+        .attribution:hover {
+            opacity: 1;
+        }
+
+        /* Status text adjustments */
+        .status-text {
+            font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            text-align: center;
+            margin-top: 1rem;
+        }
+
+        /* Prevent layout breaking on very small screens */
+        @media (max-height: 400px) {
+            .cord { height: 50px; }
+            .attribution { position: static; margin-top: 20px; }
+        }
+    </style>
+</head>
+<body class="light-off">
+
+    <div class="bulb-wrapper">
+        <div class="cord"></div>
+        <div class="bulb"></div>
+    </div>
+
+    <main class="flex flex-col items-center justify-center gap-6 z-20">
+        <div class="switch-container" id="lightSwitch" role="button" aria-label="Toggle light">
+            <div class="switch-toggle"></div>
+        </div>
+        <p class="status-text text-lg sm:text-xl md:text-2xl" id="statusLabel">The Room is Dark</p>
+    </main>
+
+    <footer class="attribution">
+        Made by Koko
+    </footer>
+
+    <script>
+        const body = document.body;
+        const lightSwitch = document.getElementById('lightSwitch');
+        const statusLabel = document.getElementById('statusLabel');
+        
+        let isOn = false;
+
+        function toggleLight() {
+            isOn = !isOn;
+            
+            if (isOn) {
+                body.classList.remove('light-off');
+                body.classList.add('light-on');
+                statusLabel.innerText = "The Light is On";
+            } else {
+                body.classList.remove('light-on');
+                body.classList.add('light-off');
+                statusLabel.innerText = "The Room is Dark";
+            }
+
+            // Tactile feedback
+            if (navigator.vibrate) {
+                navigator.vibrate(15);
+            }
+        }
+
+        lightSwitch.addEventListener('click', toggleLight);
+
+        // Keyboard accessibility
+        window.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' || e.code === 'Enter') {
+                e.preventDefault();
+                toggleLight();
+            }
+        });
+    </script>
+</body>
+</html>
