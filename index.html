@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Interactive Light Switch</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>a
+    <style>
         :root {
             --bg-light: #f3f4f6;
             --bg-dark: #0b0f19;
@@ -97,7 +97,7 @@
         .bulb {
             width: 50px;
             height: 50px;
-            background: #9ca3af;
+            background: #4b5563;
             border-radius: 50%;
             position: relative;
             transition: all 0.3s ease;
@@ -117,7 +117,7 @@
             transform: translateX(-50%);
             width: 18px;
             height: 12px;
-            background: #4b5563;
+            background: #374151;
             border-radius: 0 0 4px 4px;
         }
 
@@ -175,6 +175,7 @@
         const lightSwitch = document.getElementById('lightSwitch');
         const statusLabel = document.getElementById('statusLabel');
         
+        // Initial state is now false (Off) so it is dark when opened
         let isOn = false;
 
         function toggleLight() {
